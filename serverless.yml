@@ -1,0 +1,21 @@
+service:
+  name: auction-service
+
+plugins:
+  - serverless-bundle #Allows us to bundle our application using webpack
+  - serverless-pseudo-parameters #Allows us to easily interpolate AWS parameters such as origin and a country
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  memorySize: 256
+  stage: ${opt:stage, 'dev'}
+  region: 'sa-east-1'
+  
+functions:
+  hello:
+    handler: src/handlers/hello.handler
+    events:
+      - http:
+          method: GET
+          path: /hello
