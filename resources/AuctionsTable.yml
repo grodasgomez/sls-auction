@@ -1,0 +1,11 @@
+AuctionsTable: #Logical Id for a resource
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: AuctionsTable
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:         #It's an array of objects representing the attributes that must be in each item of our table
+          - AttributeName: id
+            AttributeType: S          #S stands for 'string'
+        KeySchema:                    
+          - AttributeName: id # We define that the attribute id is the partition key of the table
+            KeyType: HASH
