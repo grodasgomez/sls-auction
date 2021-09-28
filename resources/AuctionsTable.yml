@@ -1,7 +1,7 @@
 AuctionsTable: #Logical Id for a resource
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: AuctionsTable
+        TableName: AuctionsTable-${self:provider.stage}
         BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:         #It's an array of objects representing the attributes that must be in each item of our table
           - AttributeName: id
