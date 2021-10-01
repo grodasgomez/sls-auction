@@ -10,14 +10,28 @@ async function placeBid(event, context) {
 
   const { id } = event.pathParameters;
   const { amount } = event.body;
+  const { email } = event.requestContext.authorizer;
+
 
   const auction = await getAuctionById(id);
 
-  if(auction.status === 'CLOSED'){
+  // Valid that the bidder is not the seller
+  if (email === auction.seller) {
+    throw new createError.Forbidden(`You can't bid on your auction`);
+  }
+
+  // Valid double bidding
+  if (email === auction.highestBid.bidder) {
+    throw new createError.Forbidden(`You have already the highest bid on this auction`);
+
+  }
+
+  // Valid the auction status
+  if (auction.status === 'CLOSED') {
     throw new createError.Forbidden(`You cannot bid on closed auctions!`);
   }
 
-
+  // Valid that the new amount is higher than the actual highest bid
   if (amount <= auction.highestBid.amount) {
     throw new createError.Forbidden(`Your bid must be higher than ${auction.highestBid.amount}`);
   }
@@ -26,9 +40,10 @@ async function placeBid(event, context) {
   const params = {
     TableName: process.env.AUCTIONS_TABLE_NAME,
     Key: { id },
-    UpdateExpression: 'set highestBid.amount = :amount',
+    UpdateExpression: 'set highestBid.amount = :amount, highestBid.bidder = :bidder',
     ExpressionAttributeValues: {
       ':amount': amount,
+      ':bidder': email
     },
     ReturnValues: 'ALL_NEW'
 
@@ -51,11 +66,11 @@ async function placeBid(event, context) {
 }
 
 export const handler = commonMiddleware(placeBid)
-.use(validator(
-  {
-    inputSchema: placeBidSchema,
-    ajvOptions:{
-      strict: false
+  .use(validator(
+    {
+      inputSchema: placeBidSchema,
+      ajvOptions: {
+        strict: false
+      }
     }
-  }
-));
+  ));
